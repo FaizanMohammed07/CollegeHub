@@ -1,0 +1,684 @@
+###############################################
+# College Hub - Complete API Testing Guide
+# Use with REST Client extension (VS Code)
+# Install: ext install humao.rest-client
+###############################################
+
+@baseUrl = http://localhost:4000
+@contentType = application/json
+
+###############################################
+# IMPORTANT: ROLE-BASED ACCESS CONTROL
+###############################################
+# 
+# INSUFFICIENT_ROLE Error Solution:
+# 
+# The error "This action requires one of the following roles: 
+# club_admin, college_admin, super_admin" means the user
+# account doesn't have the required role to create clubs.
+#
+# ROLES AVAILABLE:
+# - student (default) → Can register for events, join clubs
+# - club_admin → Can create/manage clubs
+# - college_admin → Can manage college and clubs
+# - super_admin → Full access (created via database)
+#
+# WORKAROUND FOR TESTING:
+# 1. Use the seeded admin account: admin@collegehub.com
+# 2. Or manually update user role in MongoDB
+# 3. Or modify schemas to allow students to create clubs
+#
+###############################################
+
+###############################################
+# SEEDED TEST ACCOUNTS (from npm run seed)
+###############################################
+
+### ⭐ LOGIN - College Admin (can create clubs)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@stanford.edu",
+  "password": "SecurePass123@"
+}
+
+###############################################
+
+### LOGIN - Club Admin (can create clubs)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "diana@berkeley.edu",
+  "password": "SecurePass123@"
+}
+
+###############################################
+
+### LOGIN - Student Account (cannot create clubs)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "alice@stanford.edu",
+  "password": "SecurePass123@"
+}
+
+###############################################
+
+###############################################
+# AUTHENTICATION ENDPOINTS
+###############################################
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+###############################################
+
+### 2. Signup - Create New User
+POST {{baseUrl}}/api/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "SecurePass123@"
+}
+
+###############################################
+
+### 3. Login - Get Access Token
+POST http://localhost:4000/api/auth/login
+Content-Type:  application/json
+
+{
+  "email": "john@example.com",
+  "password": "SecurePass123@"
+}
+
+###############################################
+
+### 4. Refresh Token - Get New Access Token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "your-refresh-token-here"
+}
+
+###############################################
+
+### 5. Logout - Revoke Token
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+
+### 6. Forgot Password - Request Reset
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "john@example.com"
+}
+
+###############################################
+
+### 7. Reset Password - Set New Password
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "reset-token-from-email",
+  "password": "NewSecurePass456@"
+}
+
+###############################################
+
+### 8. Request Email Verification
+POST {{baseUrl}}/api/auth/request-verification
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+
+### 9. Verify Email - Complete Verification
+POST {{baseUrl}}/api/auth/verify-email
+Content-Type: {{contentType}}
+
+{
+  "token": "verification-token-from-email"
+}
+
+###############################################
+# USER ENDPOINTS
+###############################################
+
+### 10. Get Current Profile
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 11. Update Profile
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "name": "John Smith",
+  "phone": "+1-555-0123",
+  "profilePicUrl": "https://example.com/pic.jpg"
+}
+
+###############################################
+
+### 12. Update Location
+PUT {{baseUrl}}/api/users/me/location
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "lat": 40.7128,
+  "lng": -74.0060
+}
+
+###############################################
+
+### 13. Get Nearby Users
+GET {{baseUrl}}/api/users/nearby?lat=40.7128&lng=-74.0060&maxDistance=5000&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 14. Search Users
+GET {{baseUrl}}/api/users/search?query=john&role=student&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 15. Get User by ID
+GET {{baseUrl}}/api/users/user-id-here
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 16. Get User Stats
+GET {{baseUrl}}/api/users/user-id-here/stats
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 17. Block User (Admin Only)
+POST {{baseUrl}}/api/users/user-id-here/block
+Authorization: Bearer admin-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "reason": "Inappropriate behavior"
+}
+
+###############################################
+
+### 18. Unblock User (Admin Only)
+POST {{baseUrl}}/api/users/user-id-here/unblock
+Authorization: Bearer admin-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+# CLUB ENDPOINTS
+###############################################
+
+### 19. Create Club
+POST http://localhost:4000/api/clubs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTE2ODdjYjQ5YTg1NGQ3YjlhMzFiMmQiLCJpYXQiOjE3NjMwODU0MzgsImV4cCI6MTc2MzA4NjMzOH0.wvE3NKWgtnD9ysA7wxfZYm-aifxsd71Z5DSTBWpOSOw
+Content-Type: application/json
+
+{
+  "name": "Tech Club",
+  "slug": "tech-club",
+  "description": "All things technology",
+  "category": "technical",
+  "logoUrl": "https://example.com/logo.jpg"
+}
+
+###############################################
+
+### 20. Get Club Details
+GET {{baseUrl}}/api/clubs/club-id-here
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 21. Update Club
+PUT {{baseUrl}}/api/clubs/club-id-here
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "name": "Tech & Innovation Club",
+  "description": "Technology and innovation enthusiasts",
+  "logoUrl": "https://example.com/new-logo.jpg"
+}
+
+###############################################
+
+### 22. Join Club
+POST {{baseUrl}}/api/clubs/club-id-here/join
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+
+### 23. Leave Club
+POST {{baseUrl}}/api/clubs/club-id-here/leave
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+
+### 24. Get Club Members
+GET {{baseUrl}}/api/clubs/club-id-here/members?limit=20&skip=0
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 25. Add Club Admin
+POST {{baseUrl}}/api/clubs/club-id-here/admins
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "userId": "user-id-to-promote"
+}
+
+###############################################
+
+### 26. Remove Club Admin
+DELETE {{baseUrl}}/api/clubs/club-id-here/admins/user-id-here
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 27. Get College Clubs
+GET {{baseUrl}}/api/clubs/college/college-id-here?verified=true&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 28. Search Clubs
+GET {{baseUrl}}/api/clubs/search?query=tech&category=technical&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+# EVENT ENDPOINTS
+###############################################
+
+### 29. Create Event
+POST {{baseUrl}}/api/events
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "title": "Web Development Workshop",
+  "description": "Learn modern web development with HTML, CSS, and JavaScript",
+  "clubId": "club-id-here",
+  "startAt": "2025-02-15T10:00:00Z",
+  "endAt": "2025-02-15T13:00:00Z",
+  "location": {
+    "name": "Engineering Building",
+    "address": "123 Tech Street, San Francisco, CA",
+    "coords": {
+      "lat": 37.7749,
+      "lng": -122.4194
+    }
+  },
+  "capacity": 50,
+  "isPaid": false
+}
+
+###############################################
+
+### 30. List All Events
+GET {{baseUrl}}/api/events?status=published&limit=10&skip=0
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 31. List Events with Filters
+GET {{baseUrl}}/api/events?status=published&limit=10&lat=40.7128&lng=-74.0060&maxDistance=10000&dateFrom=2025-02-01&dateTo=2025-02-28
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 32. Get Event Details
+GET {{baseUrl}}/api/events/event-id-here
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 33. Update Event
+PUT {{baseUrl}}/api/events/event-id-here
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "title": "Advanced Web Development Workshop",
+  "capacity": 60,
+  "description": "Learn advanced web development concepts"
+}
+
+###############################################
+
+### 34. Cancel Event
+POST {{baseUrl}}/api/events/event-id-here/cancel
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "reason": "Venue unavailable"
+}
+
+###############################################
+
+### 35. Search Events
+GET {{baseUrl}}/api/events/search?query=workshop&category=technical&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 36. Register for Event (CONCURRENT SAFE)
+POST {{baseUrl}}/api/events/event-id-here/register
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "userCoordinates": {
+    "lat": 40.7128,
+    "lng": -74.0060
+  }
+}
+
+###############################################
+
+### 37. Get Event Registrations (Admin)
+GET {{baseUrl}}/api/events/event-id-here/registrations?limit=20&skip=0
+Authorization: Bearer admin-access-token-here
+
+###############################################
+
+### 38. Check-in User
+POST {{baseUrl}}/api/events/event-id-here/checkin
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "registrationId": "registration-id-here"
+}
+
+###############################################
+# REGISTRATION ENDPOINTS
+###############################################
+
+### 39. Get My Registrations
+GET {{baseUrl}}/api/registrations?userId=your-user-id&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 40. Get Event Registrations
+GET {{baseUrl}}/api/registrations?eventId=event-id-here&limit=10
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 41. Update Registration Status (Admin)
+PATCH {{baseUrl}}/api/registrations/registration-id-here/status
+Authorization: Bearer admin-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "status": "checked-in",
+  "metadata": {}
+}
+
+###############################################
+
+### 42. Cancel Registration
+POST {{baseUrl}}/api/registrations/registration-id-here/cancel
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "reason": "Can't attend due to conflict"
+}
+
+###############################################
+
+### 43. Request ETA for Registration
+POST {{baseUrl}}/api/registrations/registration-id-here/request-eta
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "userCoordinates": {
+    "lat": 40.7128,
+    "lng": -74.0060
+  }
+}
+
+###############################################
+
+### 44. Generate QR Token (Admin)
+POST {{baseUrl}}/api/registrations/registration-id-here/qr-token
+Authorization: Bearer admin-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+# MAPS & GEOLOCATION ENDPOINTS
+###############################################
+
+### 45. Geocode Address
+POST {{baseUrl}}/api/maps/geocode
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "address": "123 Main Street, San Francisco, CA"
+}
+
+###############################################
+
+### 46. Reverse Geocode (Coordinates to Address)
+POST {{baseUrl}}/api/maps/reverse-geocode
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "lat": 37.7749,
+  "lng": -122.4194
+}
+
+###############################################
+
+### 47. Get Route Estimate (ETA)
+POST {{baseUrl}}/api/maps/route-estimate
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "from": {
+    "lat": 40.7128,
+    "lng": -74.0060
+  },
+  "to": {
+    "lat": 40.7580,
+    "lng": -73.9855
+  },
+  "mode": "driving"
+}
+
+###############################################
+
+### 48. Get Cache Statistics
+GET {{baseUrl}}/api/maps/cache-stats
+Authorization: Bearer your-access-token-here
+
+###############################################
+
+### 49. Clear Cache (Admin Only)
+POST {{baseUrl}}/api/maps/cache/clear
+Authorization: Bearer admin-access-token-here
+Content-Type: {{contentType}}
+
+{}
+
+###############################################
+# API DOCUMENTATION
+###############################################
+
+### 50. View API Documentation
+GET {{baseUrl}}/api/docs
+
+###############################################
+# TESTING WORKFLOW
+###############################################
+
+# STEP 1: Create Account & Get Tokens
+# 1. Run request #2 (Signup)
+# 2. Copy accessToken and refreshToken from response
+# 3. Replace "your-access-token-here" with the token
+
+# STEP 2: Test User Management
+# 4. Run request #10 (Get Profile) - verify your account
+# 5. Run request #11 (Update Profile) - change name
+# 6. Run request #12 (Update Location) - set your coordinates
+
+# STEP 3: Test Club Features
+# 7. Run request #19 (Create Club)
+# 8. Copy club-id from response
+# 9. Run request #22 (Join Club)
+
+# STEP 4: Test Event Features
+# 10. Run request #29 (Create Event)
+# 11. Copy event-id from response
+# 12. Run request #36 (Register for Event) - TEST CONCURRENT SAFETY
+# 13. Run request #43 (Request ETA)
+
+# STEP 5: Test Registration & Check-in
+# 14. Run request #39 (Get My Registrations)
+# 15. Run request #38 (Check-in User)
+
+# STEP 6: Test Maps & Geolocation
+# 16. Run request #45 (Geocode Address)
+# 17. Run request #47 (Get Route Estimate - ETA)
+
+# STEP 7: Test Admin Features (if admin)
+# 18. Run request #17 (Block User)
+# 19. Run request #37 (Get Event Registrations)
+
+###############################################
+# ERROR TESTING
+###############################################
+
+### Test: Duplicate Registration (Should fail with ALREADY_REGISTERED)
+POST {{baseUrl}}/api/events/event-id-here/register
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "userCoordinates": {
+    "lat": 40.7128,
+    "lng": -74.0060
+  }
+}
+
+###############################################
+
+### Test: Invalid Credentials
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "john@example.com",
+  "password": "WrongPassword123@"
+}
+
+###############################################
+
+### Test: Missing Authorization Token
+GET {{baseUrl}}/api/users/me
+Content-Type: {{contentType}}
+
+###############################################
+
+### Test: Invalid Token
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer invalid-token-here
+Content-Type: {{contentType}}
+
+###############################################
+
+### Test: Event at Capacity (Should fail with OVERBOOKED)
+POST {{baseUrl}}/api/events/full-event-id/register
+Authorization: Bearer your-access-token-here
+Content-Type: {{contentType}}
+
+{
+  "userCoordinates": {
+    "lat": 40.7128,
+    "lng": -74.0060
+  }
+}
+
+###############################################
+# NOTES
+###############################################
+
+# Variable Replacements:
+# - {{baseUrl}} → http://localhost:5000
+# - {{contentType}} → application/json
+# - your-access-token-here → Token from login/signup
+# - your-user-id → Your user ID from profile
+# - club-id-here → Club ID from create/get club
+# - event-id-here → Event ID from create/get event
+# - registration-id-here → Registration ID from registrations list
+
+# Expected Status Codes:
+# - 200 OK → Successful GET/PUT/PATCH/DELETE
+# - 201 Created → Successful POST (creates resource)
+# - 400 Bad Request → Validation error
+# - 401 Unauthorized → Missing/invalid token
+# - 403 Forbidden → Insufficient permissions
+# - 409 Conflict → Duplicate registration, event at capacity
+# - 429 Too Many Requests → Rate limited
+# - 500 Internal Server Error → Server error
+
+# Features to Test:
+# ✓ User authentication (signup, login, refresh)
+# ✓ Profile management (view, update, location)
+# ✓ Club management (create, join, members, admin)
+# ✓ Event management (create, update, register, cancel)
+# ✓ Concurrent registration safety (unique index, capacity)
+# ✓ ETA computation (Mapbox + fallback)
+# ✓ Check-in with registrations
+# ✓ Geolocation (nearby users, location-based events)
+# ✓ Admin features (user blocking, registration management)
+# ✓ Error handling (proper error codes and messages)
+# ✓ Rate limiting (multiple requests should throttle)
+
+###############################################

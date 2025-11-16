@@ -1,0 +1,58 @@
+// Global error class for consistent error handling
+export class AppError extends Error {
+  constructor(code, message, statusCode = 400, details = null) {
+    super(message);
+    this.code = code;
+    this.statusCode = statusCode;
+    this.details = details;
+    this.timestamp = new Date();
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// Error codes for the application
+export const ERROR_CODES = {
+  // Auth errors
+  INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
+  USER_ALREADY_EXISTS: "USER_ALREADY_EXISTS",
+  USER_NOT_FOUND: "USER_NOT_FOUND",
+  INVALID_TOKEN: "INVALID_TOKEN",
+  EXPIRED_TOKEN: "EXPIRED_TOKEN",
+  TOKEN_REVOKED: "TOKEN_REVOKED",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  INSUFFICIENT_ROLE: "INSUFFICIENT_ROLE",
+  USER_BLOCKED: "USER_BLOCKED",
+
+  // Validation errors
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  INVALID_EMAIL_DOMAIN: "INVALID_EMAIL_DOMAIN",
+  WEAK_PASSWORD: "WEAK_PASSWORD",
+
+  // Resource errors
+  RESOURCE_NOT_FOUND: "RESOURCE_NOT_FOUND",
+  RESOURCE_ALREADY_EXISTS: "RESOURCE_ALREADY_EXISTS",
+  CONFLICT: "CONFLICT",
+
+  // Event errors
+  INVALID_TIME_WINDOW: "INVALID_TIME_WINDOW",
+  EVENT_TIME_IN_PAST: "EVENT_TIME_IN_PAST",
+  CAPACITY_EXCEEDED: "OVERBOOKED",
+  ALREADY_REGISTERED: "ALREADY_REGISTERED",
+  NOT_REGISTERED: "NOT_REGISTERED",
+  EVENT_CANCELLED: "EVENT_CANCELLED",
+
+  // Map/Location errors
+  GEOCODING_FAILED: "GEOCODING_FAILED",
+  INVALID_COORDINATES: "INVALID_COORDINATES",
+  ROUTE_ESTIMATION_FAILED: "ROUTE_ESTIMATION_FAILED",
+
+  // Rate limit errors
+  RATE_LIMITED: "RATE_LIMITED",
+
+  // Database errors
+  DATABASE_ERROR: "DATABASE_ERROR",
+  TRANSACTION_FAILED: "TRANSACTION_FAILED",
+
+  // Server errors
+  INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
+};
