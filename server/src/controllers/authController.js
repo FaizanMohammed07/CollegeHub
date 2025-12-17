@@ -1,4 +1,6 @@
 import authService from "../services/authService.js";
+import collegeRepository from "../repositories/collegeRepository.js";
+import { AppError, ERROR_CODES } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 /**
@@ -10,11 +12,34 @@ import { asyncHandler } from "../utils/asyncHandler.js";
  * POST /api/auth/signup
  */
 export const signup = asyncHandler(async (req, res) => {
-  const { name, email, password, phone, collegeId } = req.body;
+  const { name, email, password, phone, collegeId, collegeName } = req.body;
+
+  let resolvedCollege = null;
+
+  if (collegeId) {
+    resolvedCollege = await collegeRepository.findById(collegeId);
+    if (!resolvedCollege) {
+      throw new AppError(
+        ERROR_CODES.RESOURCE_NOT_FOUND,
+        "College not found",
+        404
+      );
+    }
+  } else if (collegeName) {
+    resolvedCollege = await collegeRepository.findOrCreateByName(collegeName);
+  }
+
+  if (!resolvedCollege) {
+    throw new AppError(
+      ERROR_CODES.VALIDATION_ERROR,
+      "College is required to create an account",
+      400
+    );
+  }
 
   const result = await authService.signup(
     { name, email, password, phone },
-    collegeId
+    resolvedCollege._id
   );
 
   // Set secure HTTP-only cookies

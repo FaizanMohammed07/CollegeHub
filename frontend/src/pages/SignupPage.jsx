@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Button, Input, Alert, Badge } from "../components/UI";
-import { useForm, useDebounce } from "../hooks/useCustomHooks";
-import { searchAPI } from "../services/endpoints";
-import toast from "react-hot-toast";
+import { Button, Input, Alert } from "../components/UI";
+import { useForm } from "../hooks/useCustomHooks";
 
 const validateForm = (values) => {
   const errors = {};
@@ -32,7 +30,8 @@ const validateForm = (values) => {
   else if (values.password !== values.confirmPassword)
     errors.confirmPassword = "Passwords do not match";
 
-  if (!values.collegeId) errors.collegeId = "Please select your college";
+  if (!values.collegeName)
+    errors.collegeName = "Please enter your college name";
 
   return errors;
 };
@@ -42,8 +41,14 @@ const SignupPage = () => {
   const { signup, loading } = useAuth();
   const [error, setError] = useState(null);
 
-  const { values, errors, handleChange, handleSubmit, setValues } = useForm(
-    { name: "", email: "", password: "", confirmPassword: "", collegeId: "" },
+  const { values, errors, handleChange, handleSubmit } = useForm(
+    {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      collegeName: "",
+    },
     async (formData) => {
       setError(null);
       try {
@@ -56,47 +61,6 @@ const SignupPage = () => {
     },
     validateForm
   );
-  const [collegeQuery, setCollegeQuery] = useState("");
-  const [collegeOptions, setCollegeOptions] = useState([]);
-  const [collegeLoading, setCollegeLoading] = useState(false);
-  const debouncedCollegeQuery = useDebounce(collegeQuery, 400);
-
-  useEffect(() => {
-    const fetchColleges = async () => {
-      if (!debouncedCollegeQuery || debouncedCollegeQuery.length < 2) {
-        setCollegeOptions([]);
-        return;
-      }
-
-      setCollegeLoading(true);
-      try {
-        const response = await searchAPI.searchAll(
-          debouncedCollegeQuery,
-          "colleges",
-          5
-        );
-        setCollegeOptions(response.data?.data?.colleges || []);
-      } catch (fetchError) {
-        toast.error("Failed to search colleges");
-      } finally {
-        setCollegeLoading(false);
-      }
-    };
-
-    fetchColleges();
-  }, [debouncedCollegeQuery]);
-
-  const handleCollegeSelect = (college) => {
-    setValues((prev) => ({ ...prev, collegeId: college._id }));
-    setCollegeQuery(college.name);
-    setCollegeOptions([]);
-  };
-
-  const clearCollege = () => {
-    setValues((prev) => ({ ...prev, collegeId: "" }));
-    setCollegeQuery("");
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-900">
       <div className="w-full max-w-md">
@@ -155,56 +119,14 @@ const SignupPage = () => {
               required
             />
 
-            <div className="space-y-2">
-              <Input
-                label="College"
-                name="collegeSearch"
-                value={collegeQuery}
-                onChange={(e) => setCollegeQuery(e.target.value)}
-                placeholder="Search your college name"
-                error={errors.collegeId}
-              />
-              {values.collegeId && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Badge variant="success">Selected</Badge>
-                  <span className="text-gray-700">{collegeQuery}</span>
-                  <button
-                    type="button"
-                    onClick={clearCollege}
-                    className="text-blue-600 text-sm"
-                  >
-                    Change
-                  </button>
-                </div>
-              )}
-              {!values.collegeId && (
-                <p className="text-xs text-gray-500">
-                  Start typing to search and select your college
-                </p>
-              )}
-              {collegeLoading && (
-                <p className="text-sm text-gray-500">Searching colleges…</p>
-              )}
-              {!collegeLoading && collegeOptions.length > 0 && (
-                <div className="border border-gray-200 rounded-lg divide-y max-h-40 overflow-y-auto">
-                  {collegeOptions.map((college) => (
-                    <button
-                      type="button"
-                      key={college._id}
-                      onClick={() => handleCollegeSelect(college)}
-                      className="w-full text-left px-3 py-2 hover:bg-blue-50"
-                    >
-                      <p className="font-medium text-gray-900">
-                        {college.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {college.address || "Address not available"}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Input
+              label="College"
+              name="collegeName"
+              value={values.collegeName}
+              onChange={handleChange}
+              placeholder="Enter your college name"
+              error={errors.collegeName}
+            />
 
             <label className="flex items-center">
               <input type="checkbox" required className="rounded" />

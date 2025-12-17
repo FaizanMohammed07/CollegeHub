@@ -1,5 +1,8 @@
 import College from "../schemas/College.js";
 
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /**
  * College Repository
  */
@@ -14,6 +17,42 @@ export class CollegeRepository {
 
   async findByName(name) {
     return College.findOne({ name });
+  }
+
+  async findByNameInsensitive(name) {
+    if (!name) return null;
+    const regex = new RegExp(`^${escapeRegExp(name.trim())}$`, "i");
+    return College.findOne({ name: regex });
+  }
+
+  async findByNameOrPartial(name) {
+    if (!name) return null;
+
+    const exactMatch = await this.findByNameInsensitive(name);
+    if (exactMatch) return exactMatch;
+
+    const results = await this.search(name, 1);
+    return results[0] || null;
+  }
+
+  async findOrCreateByName(name) {
+    if (!name) return null;
+
+    const trimmedName = name.trim();
+    if (!trimmedName) return null;
+
+    const existing = await this.findByNameInsensitive(trimmedName);
+    if (existing) return existing;
+
+    try {
+      const college = await this.create({ name: trimmedName });
+      return college;
+    } catch (error) {
+      if (error.code === 11000) {
+        return this.findByNameInsensitive(trimmedName);
+      }
+      throw error;
+    }
   }
 
   async create(collegeData) {

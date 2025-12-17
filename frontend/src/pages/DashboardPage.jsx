@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useUser } from "../context/UserContext";
 import { useClub } from "../context/ClubContext";
@@ -13,25 +13,101 @@ const DashboardPage = () => {
   const { clubs, listClubs, loading: clubsLoading } = useClub();
   const { events, listEvents, loading: eventsLoading } = useEvent();
 
-  useEffect(() => {
-    getProfile();
-    listClubs(1, 5);
-    listEvents(1, 5);
-  }, []);
+  const announcementBlocks = useMemo(
+    () => [
+      {
+        title: "Spring Innovation Week",
+        description:
+          "Virtual reality prototyping lab now open in Block C for applied research",
+        detail: "Conducted by the Tech Council — curated for student innovators.",
+      },
+      {
+        title: "Career Connect Series",
+        description:
+          "Mentorship hours with global alumni and hiring partners this Friday.",
+        detail: "Reserve your seat; capacity capped at 50 students per session.",
+      },
+      {
+        title: "Art & Culture Circuit",
+        description:
+          "Campus mural challenge—submit team entries by Jan 10 for cash prizes.",
+        detail: "Presented by the Culture Board; materials sponsored for winning crews.",
+      },
+    ], []);
 
-  const isAdmin = ["club_admin", "college_admin", "super_admin"].includes(
-    user?.role
-  );
+  const [activeAnnouncement, setActiveAnnouncement] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActiveAnnouncement((prev) =>
+        prev + 1 >= announcementBlocks.length ? 0 : prev + 1
+      );
+    }, 6000);
+    return () => clearInterval(id);
+  }, [announcementBlocks.length]);
 
   return (
     <Container className="py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Welcome back, {user?.name}! 👋
-        </h1>
-        <p className="text-gray-600">
-          Here's what's happening in your college community
-        </p>
+      <div className="mb-12">
+        <div className="relative overflow-hidden rounded-[32px] border border-white/20 bg-gradient-to-br from-slate-950 via-indigo-900 to-sky-900 p-8 text-white shadow-2xl">
+          <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)]" />
+          <div className="relative">
+            <p className="text-sm uppercase tracking-[0.5em] text-sky-200 mb-4">
+              Admin Broadcast
+            </p>
+            <h1 className="text-4xl lg:text-5xl font-black leading-tight mb-4">
+              Campus Premium Feed
+            </h1>
+            <p className="text-lg text-white/80 max-w-2xl">
+              Curated by your college leadership, this carousel brings the big-stage announcements, partnerships, and recognitions to the forefront before you dive into clubs and events.
+            </p>
+            <div className="relative mt-10">
+              <div className="flex overflow-hidden">
+                {announcementBlocks.map((item, index) => (
+                  <div
+                    key={item.title}
+                    className={`min-w-full transition-transform duration-500 ease-out ${
+                      index === activeAnnouncement
+                        ? "translate-x-0"
+                        : index < activeAnnouncement
+                        ? "-translate-x-full"
+                        : "translate-x-full"
+                    } flex-shrink-0`}
+                  >
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-[0.4em] text-sky-100">
+                        Featured Alert
+                      </p>
+                      <h3 className="text-3xl font-semibold">
+                        {item.title}
+                      </h3>
+                      <p className="text-white/80 text-base">
+                        {item.description}
+                      </p>
+                      <p className="text-sm text-white/60">
+                        {item.detail}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex gap-3">
+                {announcementBlocks.map((_, index) => (
+                  <button
+                    key={index}
+                    aria-label={`Navigate to ${announcementBlocks[index].title}`}
+                    onClick={() => setActiveAnnouncement(index)}
+                    className={`h-2 w-12 rounded-full transition ${
+                      index === activeAnnouncement
+                        ? "bg-white"
+                        : "bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {profile?.college && (
