@@ -296,8 +296,8 @@ export const Navigation = () => {
               Are you sure you want to leave CollegeHub?
             </h3>
             <p className="text-sm text-slate-500 mt-3">
-              This will end your current session. You can always log back in later
-              to continue exploring clubs, events, and campus connections.
+              This will end your current session. You can always log back in
+              later to continue exploring clubs, events, and campus connections.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button

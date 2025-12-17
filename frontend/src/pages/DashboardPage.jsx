@@ -19,21 +19,26 @@ const DashboardPage = () => {
         title: "Spring Innovation Week",
         description:
           "Virtual reality prototyping lab now open in Block C for applied research",
-        detail: "Conducted by the Tech Council — curated for student innovators.",
+        detail:
+          "Conducted by the Tech Council — curated for student innovators.",
       },
       {
         title: "Career Connect Series",
         description:
           "Mentorship hours with global alumni and hiring partners this Friday.",
-        detail: "Reserve your seat; capacity capped at 50 students per session.",
+        detail:
+          "Reserve your seat; capacity capped at 50 students per session.",
       },
       {
         title: "Art & Culture Circuit",
         description:
           "Campus mural challenge—submit team entries by Jan 10 for cash prizes.",
-        detail: "Presented by the Culture Board; materials sponsored for winning crews.",
+        detail:
+          "Presented by the Culture Board; materials sponsored for winning crews.",
       },
-    ], []);
+    ],
+    []
+  );
 
   const [activeAnnouncement, setActiveAnnouncement] = useState(0);
 
@@ -59,7 +64,9 @@ const DashboardPage = () => {
               Campus Premium Feed
             </h1>
             <p className="text-lg text-white/80 max-w-2xl">
-              Curated by your college leadership, this carousel brings the big-stage announcements, partnerships, and recognitions to the forefront before you dive into clubs and events.
+              Curated by your college leadership, this carousel brings the
+              big-stage announcements, partnerships, and recognitions to the
+              forefront before you dive into clubs and events.
             </p>
             <div className="relative mt-10">
               <div className="flex overflow-hidden">
@@ -70,23 +77,19 @@ const DashboardPage = () => {
                       index === activeAnnouncement
                         ? "translate-x-0"
                         : index < activeAnnouncement
-                        ? "-translate-x-full"
-                        : "translate-x-full"
+                          ? "-translate-x-full"
+                          : "translate-x-full"
                     } flex-shrink-0`}
                   >
                     <div className="space-y-2">
                       <p className="text-xs uppercase tracking-[0.4em] text-sky-100">
                         Featured Alert
                       </p>
-                      <h3 className="text-3xl font-semibold">
-                        {item.title}
-                      </h3>
+                      <h3 className="text-3xl font-semibold">{item.title}</h3>
                       <p className="text-white/80 text-base">
                         {item.description}
                       </p>
-                      <p className="text-sm text-white/60">
-                        {item.detail}
-                      </p>
+                      <p className="text-sm text-white/60">{item.detail}</p>
                     </div>
                   </div>
                 ))}
@@ -98,9 +101,7 @@ const DashboardPage = () => {
                     aria-label={`Navigate to ${announcementBlocks[index].title}`}
                     onClick={() => setActiveAnnouncement(index)}
                     className={`h-2 w-12 rounded-full transition ${
-                      index === activeAnnouncement
-                        ? "bg-white"
-                        : "bg-white/40"
+                      index === activeAnnouncement ? "bg-white" : "bg-white/40"
                     }`}
                   />
                 ))}
